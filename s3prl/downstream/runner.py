@@ -169,6 +169,7 @@ class Runner():
             upstream = self.upstream.model,
             feature_selection = self.args.upstream_feature_selection,
             layer_selection = self.args.upstream_layer_selection,
+            layers_for_ws = self.args.upstream_layers_for_ws,
             upstream_device = self.args.device,
             normalize = self.args.upstream_feature_normalize,
         ).to(self.args.device)
