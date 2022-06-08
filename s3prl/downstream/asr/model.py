@@ -73,7 +73,6 @@ class RNNLayer(nn.Module):
 
         return output, x_len
 
-
 class RNNs(nn.Module):
     def __init__(self,
         input_size,
@@ -128,6 +127,119 @@ class RNNs(nn.Module):
 
         for rnn in self.rnns:
             x, x_len = rnn(x, x_len)
+
+        logits = self.linear(x)
+        return logits, x_len        
+
+
+
+
+class EncoderLayer(nn.Module):
+    ''' RNN wrapper, includes time-downsampling'''
+
+    def __init__(self, input_dim, dim, dropout, layer_norm, sample_rate, proj):
+        super(EncoderLayer, self).__init__()
+        # Setup
+        encoder_out_dim = dim
+        self.out_dim = encoder_out_dim
+        self.dropout = dropout
+        self.layer_norm = layer_norm
+        self.sample_rate = sample_rate
+        self.proj = proj
+
+        # encoder layer
+
+
+        self.layer = nn.TransformerEncoderLayer(d_model=1024, nhead=8, batch_first=True)
+
+        # Regularizations
+        if self.layer_norm:
+            self.ln = nn.LayerNorm(encoder_out_dim)
+        if self.dropout > 0:
+            self.dp = nn.Dropout(p=dropout)
+
+        # Additional projection layer
+        if self.proj:
+            self.pj = nn.Linear(encoder_out_dim, encoder_out_dim)
+
+    def forward(self, input_x, x_len):
+        # Forward RNN
+        # if not self.training:
+        #     self.layer.flatten_parameters()
+
+        # input_x = pack_padded_sequence(input_x, x_len, batch_first=True, enforce_sorted=False)
+
+        output= self.layer(input_x)
+        
+        # output, x_len = pad_packed_sequence(output, batch_first=True)
+
+        # Normalizations
+        if self.layer_norm:
+            output = self.ln(output)
+        if self.dropout > 0:
+            output = self.dp(output)
+
+        # Perform Downsampling
+        if self.sample_rate > 1:
+            output, x_len = downsample(output, x_len, self.sample_rate, 'drop')
+
+        if self.proj:
+            output = torch.tanh(self.pj(output))
+
+        return output, x_len
+
+
+class TransformerEncoder(nn.Module):
+    def __init__(self,
+        input_size,
+        output_size,
+        upstream_rate,
+        dim, 
+        dropout,
+        layer_norm,
+        proj,
+        sample_rate,
+        sample_style,
+        total_rate = 320,
+    ):
+        super(TransformerEncoder, self).__init__()
+        latest_size = input_size
+
+        self.sample_rate = 1 if total_rate == -1 else round(total_rate / upstream_rate)
+        self.sample_style = sample_style
+        if sample_style == 'concat':
+            latest_size *= self.sample_rate
+
+        print(len(dim),'len')
+        self.encoders = nn.ModuleList()
+        for i in range(len(dim)):
+            encoder_layer = EncoderLayer(
+                latest_size,
+                dim[i],
+                dropout[i],
+                layer_norm[i],
+                sample_rate[i],
+                proj[i],
+            )
+            self.encoders.append(encoder_layer)
+            latest_size = encoder_layer.out_dim
+
+        self.linear = nn.Linear(latest_size, output_size)
+    
+    def forward(self, x, x_len):
+        r"""
+        Args:
+            x (torch.Tensor): Tensor of dimension (batch_size, input_length, num_features).
+            x_len (torch.IntTensor): Tensor of dimension (batch_size).
+        Returns:
+            Tensor: Predictor tensor of dimension (batch_size, input_length, number_of_classes).
+        """
+        # Perform Downsampling
+        if self.sample_rate > 1:
+            x, x_len = downsample(x, x_len, self.sample_rate, self.sample_style)
+
+        for encoder in self.encoders:
+            x,x_len = encoder(x,x_len)
 
         logits = self.linear(x)
         return logits, x_len        
