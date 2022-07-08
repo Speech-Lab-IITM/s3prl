@@ -38,7 +38,7 @@ specaug:
 
 downstream_expert:
   datarc:
-    train: ['1h','9h']
+    train: ['train-clean-100']
     dev-clean: ['dev-clean']
     dev-other: ['dev-other']
     test-clean: ['test-clean']
@@ -47,8 +47,8 @@ downstream_expert:
     train_batch_size: 32
     batch_size: 32
     eval_batch_size: 1
-    libri_root: '/nlsasfs/home/nltm-pilot/vrunda/Database/Librispeech_finetune_Data/librispeech_finetuning/'
-    bucket_file: './data/librispeech_finetune/len_for_bucket'
+    libri_root: '/nlsasfs/home/nltm-pilot/vrunda/Database/LibriSpeech'
+    bucket_file: './data/librispeech/len_for_bucket'
     dict_path: "./downstream/asr/char.dict"
 
     zero_infinity: True
@@ -78,10 +78,10 @@ downstream_expert:
       total_rate: 320
     TransformerEncoder:
       total_rate: -1
-      dim: [1024, 1024,1024, 1024]
-      dropout: [0.2, 0.2,0.2, 0.2]
-      layer_norm: [False, False,False, False]
-      proj: [False, False,False, False]              # Linear projection + Tanh after each rnn layer
-      sample_rate: [1, 1,1, 1]
+      dim: [1024, 1024,1024,1024]
+      dropout: [0.2, 0.2,0.2,0.2]
+      layer_norm: [False, False,False,False]
+      proj: [False, False,False,False]              # Linear projection + Tanh after each rnn layer
+      sample_rate: [1, 1,1,1]
       sample_style: 'concat'                  # 'drop'/'concat'
 

@@ -1,5 +1,5 @@
 runner:
-  total_steps: 200000
+  total_steps: 50000
   gradient_clipping: 1
   gradient_accumulate_steps: 1
   log_step: 100
@@ -47,9 +47,10 @@ downstream_expert:
     train_batch_size: 32
     batch_size: 32
     eval_batch_size: 1
-    libri_root: '/app/data/LibriSpeech'
+    libri_root: '/nlsasfs/home/nltm-pilot/vrunda/Database/LibriSpeech'
     bucket_file: './data/librispeech/len_for_bucket'
     dict_path: "./downstream/asr/char.dict"
+
 
     zero_infinity: True
 

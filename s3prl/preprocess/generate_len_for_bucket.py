@@ -97,8 +97,8 @@ def main():
     # change the SETS list to match your dataset, for example:
     # SETS = ['train', 'dev', 'test']
     # SETS = ['TRAIN', 'TEST']
-    # SETS = ['train-clean-100', 'train-clean-360', 'train-other-500', 'dev-clean', 'dev-other', 'test-clean', 'test-other']
-    
+    #SETS = ['train-clean-100', 'train-clean-360', 'train-other-500', 'dev-clean', 'dev-other', 'test-clean', 'test-other']
+    SETS = ['train_hi']
     # Select data sets
     for idx, s in enumerate(SETS):
         print('\t', idx, ':', s)
